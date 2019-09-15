@@ -1,0 +1,62 @@
+/*
+
+Copyright 2018 Intel Corporation
+
+This software and the related documents are Intel copyrighted materials,
+and your use of them is governed by the express license under which they
+were provided to you (License). Unless the License provides otherwise,
+you may not use, modify, copy, publish, distribute, disclose or transmit
+this software or the related documents without Intel's prior written
+permission.
+
+This software and the related documents are provided as is, with no
+express or implied warranties, other than those that are expressly stated
+in the License.
+
+*/
+
+enclave {
+	include "sgx_trts.h"
+	include "sgx_utils.h"
+	include "sgx_tkey_exchange.h"
+	include "protocol.h"
+	from "sgx_tkey_exchange.edl" import *;
+	trusted {
+		public sgx_status_t get_report([out] sgx_report_t *report,[in] sgx_target_info_t *target_info);
+		public size_t get_pse_manifest_size();
+		public sgx_status_t get_pse_manifest([out, count=sz] char *buf, size_t sz);
+		public sgx_status_t enclave_ra_init(sgx_ec256_public_t key, sgx_ec256_signature_t sig,int b_pse, [out] sgx_ra_context_t *ctx, [out] sgx_status_t *pse_status);
+		public sgx_status_t enclave_ra_get_key_hash(sgx_ra_context_t ctx,[out] sgx_sha256_hash_t *mkhash,[out] sgx_sha256_hash_t *skhash);
+		public sgx_status_t enclave_ra_close(sgx_ra_context_t ctx);
+		public void *ecall_newthread(int slot, unsigned long long tid);
+		public sgx_status_t enclave_do_calculation(
+		sgx_ra_context_t ctx, 
+			[in, count=1] compute_request_t *req,
+			[in, size=encrypted_bytes]void *encrypted_data, size_t encrypted_bytes,
+			[in, size=local_bytes]void *local_data, size_t local_bytes, 
+			int local_entries, int local_dim, int nthreads,
+			[out, count=1] compute_result_t *result,
+			[out, size=out_bytes]void *out_data, size_t out_bytes);
+		public sgx_status_t enclave_init([in, size=key_size]uint8_t* key, size_t key_size);
+		public sgx_status_t enclave_test();
+		public sgx_status_t enclave_get_sealed_data_size(size_t message_size, [out]size_t *sealed_messsage_size);
+		public sgx_status_t enclave_get_unsealed_data_size([user_check]uint8_t *encrypted_data, [out]size_t *plaintext_size);
+		public sgx_status_t enclave_seal_data([in, size=message_size]uint8_t* message, size_t message_size, [out, size=outbuf_size]uint8_t *outbuf, size_t outbuf_size);
+		public sgx_status_t enclave_unseal_data([in, size=message_size]uint8_t* message, size_t message_size, [out, size=outbuf_size]uint8_t *outbuf, size_t outbuf_size);
+	    public sgx_status_t ecall_key_gen_and_seal([out, size=pubkey_size] char *pubkey, size_t pubkey_size, [out, size=sealedprivkey_size] char *sealedprivkey, size_t sealedprivkey_size);
+        public sgx_status_t ecall_calc_buffer_sizes([out] size_t* epubkey_size, [out] size_t* esealedprivkey_size, [out] size_t* esignature_size, [out] size_t* esealedSK_size, [out] size_t* Outer_size);
+        public sgx_status_t ecall_unseal_and_sign([in, size=msg_size] uint8_t * msg, uint32_t msg_size, [in, size=sealed_size]char *sealed, size_t sealed_size, [out, size=signature_size] char* signature, size_t signature_size);
+	    public sgx_status_t ecall_unseal_and_generate_SK([in, size=pubkey_size] char *pubkey, size_t pubkey_size, [in, size=sealed_size] char *sealed, size_t sealed_size, [out, size=Sk_sealed_size] char *Sk_sealed, size_t Sk_sealed_size);
+		public sgx_status_t ecall_unseal_SK([out, size=SK_key_size] char *SK_key, uint32_t SK_key_size, [in, size=sealed_size] char *sealed, size_t sealed_size);
+		public sgx_status_t new_enclave_init([in, size=sealed_size] char *sealed, size_t sealed_size);
+	};
+
+	untrusted {
+		void oc_print_error([in, string]const char *buf);
+		unsigned long long oc_new_thread(int slot);
+		int oc_pthread_join(unsigned long long id, [out, count=1] unsigned long long *rv);
+		void ocall_print_string([in, string] const char *str);
+	};
+};
+
+
