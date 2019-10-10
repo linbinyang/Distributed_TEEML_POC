@@ -1,4 +1,4 @@
-A simple POC Distributed Machine Learning framework using SGX & ZeroMQ
+A simple POC Distributed Machine Learning Framework using SGX & ZeroMQ
 ================================================
 
 Introduction
